@@ -18,6 +18,7 @@ import { motion } from 'framer-motion';
 import StarIcon from '@mui/icons-material/Star';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import { movieAPI } from '../services/api';
+import { getPosterWithFallback } from '../utils/media';
 
 const genres = ['All', 'Action', 'Drama', 'Comedy', 'Horror', 'Sci-Fi', 'Romance', 'Thriller', 'Crime', 'Adventure'];
 
@@ -190,7 +191,7 @@ const Recommendations = () => {
                     <Box sx={{ position: 'relative', paddingTop: '150%', overflow: 'hidden' }}>
                       <CardMedia
                         component="img"
-                        image={movie.posterUrl}
+                        image={getPosterWithFallback(movie.posterUrl)}
                         alt={movie.title}
                         className="movie-poster"
                         sx={{

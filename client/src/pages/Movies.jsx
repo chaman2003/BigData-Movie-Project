@@ -24,6 +24,7 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import PersonIcon from '@mui/icons-material/Person';
 import { movieAPI } from '../services/api';
+import { getPosterWithFallback } from '../utils/media';
 import useDebounce from '../hooks/useDebounce';
 
 const genres = ['All', 'Action', 'Drama', 'Comedy', 'Horror', 'Sci-Fi', 'Romance', 'Thriller', 'Crime', 'Adventure', 'Animation'];
@@ -349,7 +350,7 @@ const Movies = () => {
                     <Box sx={{ position: 'relative', paddingTop: '150%', overflow: 'hidden', bgcolor: '#1a202c' }}>
                       <CardMedia
                         component="img"
-                        image={movie.posterUrl}
+                        image={getPosterWithFallback(movie.posterUrl)}
                         alt={movie.title}
                         className="movie-poster"
                         loading="lazy"
@@ -501,7 +502,7 @@ const Movies = () => {
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={4}>
                     <motion.img
-                      src={selectedMovie.posterUrl}
+                      src={getPosterWithFallback(selectedMovie.posterUrl)}
                       alt={selectedMovie.title}
                       style={{
                         width: '100%',
