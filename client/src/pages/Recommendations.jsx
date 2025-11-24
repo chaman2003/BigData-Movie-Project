@@ -5,7 +5,6 @@ import {
   Box,
   Card,
   CardContent,
-  CardMedia,
   Chip,
   FormControl,
   InputLabel,
@@ -18,7 +17,6 @@ import { motion } from 'framer-motion';
 import StarIcon from '@mui/icons-material/Star';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import { movieAPI } from '../services/api';
-import { getPosterWithFallback } from '../utils/media';
 
 const genres = ['All', 'Action', 'Drama', 'Comedy', 'Horror', 'Sci-Fi', 'Romance', 'Thriller', 'Crime', 'Adventure'];
 
@@ -159,142 +157,107 @@ const Recommendations = () => {
             </Typography>
           </motion.div>
 
-          <Grid container spacing={3}>
-            {recommendations.map((movie, index) => {
-              const posterSources = getPosterWithFallback(movie.posterUrl, movie.title);
-
-              return (
-                <Grid item xs={12} sm={6} md={4} lg={3} key={movie._id}>
-                  <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3, delay: index * 0.02 }}
-                  whileHover={{ scale: 1.05, y: -8 }}
-                  style={{ height: '100%' }}
+          <Box>
+            {recommendations.map((movie, index) => (
+              <motion.div
+                key={movie._id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.2, delay: index * 0.01 }}
+              >
+                <Card
+                  sx={{
+                    background: 'rgba(26, 32, 44, 0.6)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '12px',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    mb: 2,
+                    '&:hover': {
+                      boxShadow: '0 8px 32px 0 rgba(0, 212, 255, 0.2)',
+                      border: '1px solid rgba(0, 212, 255, 0.5)',
+                      transform: 'translateY(-2px)',
+                    },
+                  }}
                 >
-                  <Card
-                    sx={{
-                      height: '100%',
-                      background: 'rgba(26, 32, 44, 0.6)',
-                      backdropFilter: 'blur(20px)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      borderRadius: '16px',
-                      overflow: 'hidden',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        boxShadow: '0 12px 48px 0 rgba(0, 212, 255, 0.3)',
-                        border: '1px solid rgba(0, 212, 255, 0.5)',
-                        '& .movie-poster': {
-                          transform: 'scale(1.1)',
-                        },
-                      },
-                    }}
-                  >
-                    <Box sx={{ position: 'relative', paddingTop: '150%', overflow: 'hidden' }}>
-                      <CardMedia
-                        component="img"
-                        image={posterSources.src}
-                        alt={movie.title}
-                        className="movie-poster"
-                        loading="lazy"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = posterSources.placeholder;
-                        }}
-                        sx={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                          transition: 'transform 0.3s ease',
-                        }}
-                      />
-                      <Box
-                        sx={{
-                          position: 'absolute',
-                          top: 12,
-                          right: 12,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 0.5,
-                          px: 1.5,
-                          py: 0.5,
-                          borderRadius: '8px',
-                          background: 'rgba(0, 0, 0, 0.7)',
-                          backdropFilter: 'blur(10px)',
-                        }}
-                      >
-                        <StarIcon sx={{ fontSize: 16, color: '#ffaa00' }} />
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#ffaa00' }}>
-                          {movie.rating.toFixed(1)}
-                        </Typography>
-                      </Box>
-                      <Box
-                        sx={{
-                          position: 'absolute',
-                          top: 12,
-                          left: 12,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          width: 32,
-                          height: 32,
-                          borderRadius: '8px',
-                          background: 'linear-gradient(135deg, #00d4ff 0%, #0080ff 100%)',
-                          boxShadow: '0 4px 12px rgba(0, 212, 255, 0.4)',
-                        }}
-                      >
-                        <ThumbUpIcon sx={{ fontSize: 16, color: '#fff' }} />
-                      </Box>
-                    </Box>
-                    <CardContent sx={{ p: 2 }}>
+                  <CardContent sx={{ p: 2.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1.5 }}>
+                      <ThumbUpIcon sx={{ fontSize: 20, color: '#00d4ff' }} />
                       <Typography
                         variant="h6"
                         sx={{
-                          fontWeight: 600,
-                          mb: 1,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          minHeight: '3.6em',
+                          fontWeight: 700,
+                          color: '#fff',
+                          mb: 0,
                         }}
                       >
                         {movie.title}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-                        {movie.year}
-                      </Typography>
-                      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                        {movie.genre.slice(0, 2).map((g, i) => (
-                          <Chip key={i} label={g} size="small" />
-                        ))}
-                      </Box>
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
+                      <Box
                         sx={{
-                          mt: 2,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 3,
-                          WebkitBoxOrient: 'vertical',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 0.5,
+                          px: 1.2,
+                          py: 0.4,
+                          borderRadius: '6px',
+                          background: 'rgba(255, 170, 0, 0.1)',
+                          border: '1px solid rgba(255, 170, 0, 0.3)',
+                          whiteSpace: 'nowrap',
+                          ml: 'auto',
                         }}
                       >
-                        {movie.description}
+                        <StarIcon sx={{ fontSize: 14, color: '#ffaa00' }} />
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#ffaa00' }}>
+                          {movie.rating.toFixed(1)}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1.5, flexWrap: 'wrap' }}>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                        {movie.year}
                       </Typography>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              </Grid>
-              );
-            })}
-          </Grid>
+                      {movie.movieLanguage && (
+                        <Chip
+                          label={movie.movieLanguage}
+                          size="small"
+                          sx={{
+                            background: 'rgba(0, 212, 255, 0.1)',
+                            border: '1px solid rgba(0, 212, 255, 0.3)',
+                            color: '#00d4ff',
+                            height: 24,
+                          }}
+                        />
+                      )}
+                      {movie.movieCountry && (
+                        <Chip
+                          label={movie.movieCountry}
+                          size="small"
+                          sx={{
+                            background: 'rgba(0, 255, 136, 0.1)',
+                            border: '1px solid rgba(0, 255, 136, 0.3)',
+                            color: '#00ff88',
+                            height: 24,
+                          }}
+                        />
+                      )}
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 1 }}>
+                      {movie.genre && movie.genre.map((g, i) => (
+                        <Chip key={i} label={g} size="small" variant="outlined" />
+                      ))}
+                    </Box>
+                    {movie.description && (
+                      <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.5 }}>
+                        {movie.description.substring(0, 200)}...
+                      </Typography>
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </Box>
 
           {recommendations.length === 0 && (
             <Box sx={{ textAlign: 'center', py: 8 }}>

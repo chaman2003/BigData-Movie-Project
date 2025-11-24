@@ -1,31 +1,43 @@
 import axios from 'axios';
 
-// Helper to construct the base URL intelligently
-const getBaseUrl = () => {
-  // Default to the production backend if env var is missing
-  let url = process.env.REACT_APP_API_URL || 'https://bigdata-movie-backend.vercel.app';
-  
-  // Ensure protocol exists (CRITICAL FIX)
+const PROD_BACKEND = 'https://bigdata-movie-backend.vercel.app';
+
+const buildApiUrl = (inputUrl) => {
+  if (!inputUrl) return null;
+
+  let url = inputUrl.trim();
+  if (!url) return null;
+
   if (!url.startsWith('http://') && !url.startsWith('https://')) {
     url = `https://${url}`;
   }
 
-  // Remove trailing slash
   url = url.replace(/\/$/, '');
-  
-  // Remove /movies suffix if user accidentally included it
   url = url.replace(/\/movies$/, '');
-  
-  // Remove /api suffix if present (we'll add it back to be consistent)
   url = url.replace(/\/api$/, '');
-  
+
   return `${url}/api`;
 };
 
-const API_URL = getBaseUrl();
+const resolveBaseUrl = () => {
+  const fromEnv = buildApiUrl(process.env.REACT_APP_API_URL);
+  if (fromEnv) {
+    return { url: fromEnv, source: 'env' };
+  }
+
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+    return { url: buildApiUrl(window.location.origin), source: 'same-origin' };
+  }
+
+  const fallbackTarget = process.env.NODE_ENV === 'production' ? PROD_BACKEND : 'http://localhost:5000';
+  return { url: buildApiUrl(fallbackTarget), source: 'fallback' };
+};
+
+const { url: API_URL, source: API_SOURCE } = resolveBaseUrl();
 console.log('🔌 API Configuration:', {
   raw: process.env.REACT_APP_API_URL,
-  computed: API_URL
+  computed: API_URL,
+  source: API_SOURCE
 });
 
 const api = axios.create({

@@ -8,5 +8,11 @@
         "distDir": "build"
       }
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://bigdata-movie-backend.vercel.app/api/$1"
+    }
   ]
 }

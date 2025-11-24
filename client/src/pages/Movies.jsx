@@ -5,7 +5,6 @@ import {
   Box,
   Card,
   CardContent,
-  CardMedia,
   Chip,
   TextField,
   InputAdornment,
@@ -24,7 +23,6 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import PersonIcon from '@mui/icons-material/Person';
 import { movieAPI } from '../services/api';
-import { getPosterWithFallback } from '../utils/media';
 import useDebounce from '../hooks/useDebounce';
 
 const genres = ['All', 'Action', 'Drama', 'Comedy', 'Horror', 'Sci-Fi', 'Romance', 'Thriller', 'Crime', 'Adventure', 'Animation'];
@@ -300,149 +298,124 @@ const Movies = () => {
         </Box>
       )}
 
-      {/* Movies Grid */}
-      <Grid container spacing={3}>
-        {loading ? (
-          Array.from({ length: 12 }).map((_, index) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={`skeleton-${index}`}>
-              <Skeleton
-                variant="rounded"
-                height={360}
+      {/* Movies List */}
+      {loading ? (
+        <Box>
+          {Array.from({ length: 8 }).map((_, index) => (
+            <Skeleton key={index} variant="rounded" height={120} sx={{ mb: 2, borderRadius: '12px', background: 'rgba(255, 255, 255, 0.05)' }} />
+          ))}
+        </Box>
+      ) : (
+        <Box>
+          {movies.map((movie, index) => (
+            <motion.div
+              key={movie._id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.2, delay: index * 0.01 }}
+            >
+              <Card
+                onClick={() => handleMovieClick(movie)}
                 sx={{
-                  borderRadius: '20px',
-                  background: 'rgba(255, 255, 255, 0.05)'
+                  background: 'rgba(26, 32, 44, 0.6)',
+                  backdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '12px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  mb: 2,
+                  '&:hover': {
+                    boxShadow: '0 8px 32px 0 rgba(0, 212, 255, 0.2)',
+                    border: '1px solid rgba(0, 212, 255, 0.5)',
+                    transform: 'translateY(-2px)',
+                  },
                 }}
-              />
-            </Grid>
-          ))
-        ) : (
-          <AnimatePresence>
-            {movies.map((movie, index) => {
-              const posterSources = getPosterWithFallback(movie.posterUrl, movie.title);
-
-              return (
-                <Grid item xs={12} sm={6} md={4} lg={3} key={movie._id}>
-                  <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.3, delay: index * 0.02 }}
-                  whileHover={{ scale: 1.05, y: -8 }}
-                  style={{ height: '100%' }}
-                >
-                  <Card
-                    onClick={() => handleMovieClick(movie)}
-                    sx={{
-                      height: '100%',
-                      background: 'rgba(26, 32, 44, 0.6)',
-                      backdropFilter: 'blur(20px)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      borderRadius: '16px',
-                      overflow: 'hidden',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        boxShadow: '0 12px 48px 0 rgba(0, 212, 255, 0.3)',
-                        border: '1px solid rgba(0, 212, 255, 0.5)',
-                        '& .movie-poster': {
-                          transform: 'scale(1.1)',
-                        },
-                      },
-                    }}
-                  >
-                    <Box sx={{ position: 'relative', paddingTop: '150%', overflow: 'hidden', bgcolor: '#1a202c' }}>
-                      <CardMedia
-                        component="img"
-                        image={posterSources.src}
-                        alt={movie.title}
-                        className="movie-poster"
-                        loading="lazy"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = posterSources.placeholder;
-                        }}
-                        sx={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                          transition: 'transform 0.3s ease',
-                        }}
-                      />
-                      <Box
-                        sx={{
-                          position: 'absolute',
-                          top: 12,
-                          right: 12,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 0.5,
-                          px: 1.5,
-                          py: 0.5,
-                          borderRadius: '8px',
-                          background: 'rgba(0, 0, 0, 0.7)',
-                          backdropFilter: 'blur(10px)',
-                        }}
-                      >
-                        <StarIcon sx={{ fontSize: 16, color: '#ffaa00' }} />
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#ffaa00' }}>
-                          {movie.rating.toFixed(1)}
+              >
+                <CardContent sx={{ p: 2.5 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
+                    <Box sx={{ flex: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1.5 }}>
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            fontWeight: 700,
+                            color: '#fff',
+                            mb: 0,
+                          }}
+                        >
+                          {movie.title}
                         </Typography>
+                        <Box
+                          sx={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 0.5,
+                            px: 1.2,
+                            py: 0.4,
+                            borderRadius: '6px',
+                            background: 'rgba(255, 170, 0, 0.1)',
+                            border: '1px solid rgba(255, 170, 0, 0.3)',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          <StarIcon sx={{ fontSize: 14, color: '#ffaa00' }} />
+                          <Typography variant="body2" sx={{ fontWeight: 600, color: '#ffaa00' }}>
+                            {movie.rating.toFixed(1)}
+                          </Typography>
+                        </Box>
                       </Box>
-                    </Box>
-                    <CardContent sx={{ p: 2 }}>
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          fontWeight: 600,
-                          mb: 1,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          minHeight: '3.6em',
-                        }}
-                      >
-                        {movie.title}
-                      </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-                        <Typography variant="body2" color="text.secondary">
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1.5, flexWrap: 'wrap' }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                           {movie.year}
                         </Typography>
+                        {movie.runtime && (
+                          <Typography variant="body2" color="text.secondary">
+                            {movie.runtime} min
+                          </Typography>
+                        )}
                         {movie.movieLanguage && (
-                          <>
-                            <Typography variant="body2" color="text.secondary">•</Typography>
-                            <Typography variant="body2" color="#00d4ff" sx={{ fontSize: '0.85rem' }}>
-                              {movie.movieLanguage}
-                            </Typography>
-                          </>
+                          <Chip
+                            label={movie.movieLanguage}
+                            size="small"
+                            sx={{
+                              background: 'rgba(0, 212, 255, 0.1)',
+                              border: '1px solid rgba(0, 212, 255, 0.3)',
+                              color: '#00d4ff',
+                              height: 24,
+                            }}
+                          />
                         )}
                         {movie.movieCountry && (
-                          <>
-                            <Typography variant="body2" color="text.secondary">•</Typography>
-                            <Typography variant="body2" color="rgba(255, 255, 255, 0.5)" sx={{ fontSize: '0.85rem' }}>
-                              {movie.movieCountry}
-                            </Typography>
-                          </>
+                          <Chip
+                            label={movie.movieCountry}
+                            size="small"
+                            sx={{
+                              background: 'rgba(0, 255, 136, 0.1)',
+                              border: '1px solid rgba(0, 255, 136, 0.3)',
+                              color: '#00ff88',
+                              height: 24,
+                            }}
+                          />
                         )}
                       </Box>
-                      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                        {movie.genre.slice(0, 2).map((g, i) => (
-                          <Chip key={i} label={g} size="small" />
+                      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 1 }}>
+                        {movie.genre && movie.genre.map((g, i) => (
+                          <Chip key={i} label={g} size="small" variant="outlined" />
                         ))}
                       </Box>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              </Grid>
-              );
-            })}
-          </AnimatePresence>
-        )}
-      </Grid>
+                      {movie.description && (
+                        <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.5, mt: 1 }}>
+                          {movie.description.substring(0, 200)}...
+                        </Typography>
+                      )}
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </Box>
+      )}
 
       {!loading && movies.length === 0 && (
         <Box sx={{ textAlign: 'center', py: 8 }}>
@@ -503,106 +476,81 @@ const Movies = () => {
                 </Box>
               </DialogTitle>
               <DialogContent>
-                <Grid container spacing={3}>
-                  <Grid item xs={12} md={4}>
-                    {(() => {
-                      const posterSources = getPosterWithFallback(selectedMovie.posterUrl, selectedMovie.title);
-                      return (
-                        <motion.img
-                          src={posterSources.src}
-                          alt={selectedMovie.title}
-                          style={{
-                            width: '100%',
-                            borderRadius: '16px',
-                            border: '1px solid rgba(0, 212, 255, 0.3)',
-                          }}
-                          whileHover={{ scale: 1.02 }}
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = posterSources.placeholder;
-                          }}
-                        />
-                      );
-                    })()}
-                  </Grid>
-                  <Grid item xs={12} md={8}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <StarIcon sx={{ color: '#ffaa00', fontSize: 28 }} />
-                        <Typography variant="h4" sx={{ fontWeight: 700, color: '#ffaa00' }}>
-                          {selectedMovie.rating.toFixed(1)}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          / 10
-                        </Typography>
-                      </Box>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <StarIcon sx={{ color: '#ffaa00', fontSize: 28 }} />
+                    <Typography variant="h4" sx={{ fontWeight: 700, color: '#ffaa00' }}>
+                      {selectedMovie.rating.toFixed(1)}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      / 10
+                    </Typography>
+                  </Box>
 
-                      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <CalendarTodayIcon sx={{ fontSize: 20, color: '#00d4ff' }} />
-                          <Typography variant="body1">{selectedMovie.year}</Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <AccessTimeIcon sx={{ fontSize: 20, color: '#00d4ff' }} />
-                          <Typography variant="body1">{selectedMovie.runtime} min</Typography>
-                        </Box>
-                        {selectedMovie.movieLanguage && (
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Typography variant="body1" sx={{ color: '#00d4ff' }}>🌐</Typography>
-                            <Typography variant="body1">{selectedMovie.movieLanguage}</Typography>
-                          </Box>
-                        )}
-                        {selectedMovie.movieCountry && (
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Typography variant="body1" sx={{ color: '#00d4ff' }}>📍</Typography>
-                            <Typography variant="body1">{selectedMovie.movieCountry}</Typography>
-                          </Box>
-                        )}
-                      </Box>
-
-                      <Box>
-                        <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
-                          Genres
-                        </Typography>
-                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                          {selectedMovie.genre.map((g, i) => (
-                            <Chip key={i} label={g} />
-                          ))}
-                        </Box>
-                      </Box>
-
-                      <Box>
-                        <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
-                          Director
-                        </Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <PersonIcon sx={{ fontSize: 20, color: '#00d4ff' }} />
-                          <Typography variant="body1">{selectedMovie.director}</Typography>
-                        </Box>
-                      </Box>
-
-                      <Box>
-                        <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
-                          Cast
-                        </Typography>
-                        <Typography variant="body2">
-                          {selectedMovie.cast.length > 0
-                            ? selectedMovie.cast.join(', ')
-                            : 'Not available'}
-                        </Typography>
-                      </Box>
-
-                      <Box>
-                        <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
-                          Description
-                        </Typography>
-                        <Typography variant="body2" sx={{ lineHeight: 1.8 }}>
-                          {selectedMovie.description}
-                        </Typography>
-                      </Box>
+                  <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <CalendarTodayIcon sx={{ fontSize: 20, color: '#00d4ff' }} />
+                      <Typography variant="body1">{selectedMovie.year}</Typography>
                     </Box>
-                  </Grid>
-                </Grid>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <AccessTimeIcon sx={{ fontSize: 20, color: '#00d4ff' }} />
+                      <Typography variant="body1">{selectedMovie.runtime} min</Typography>
+                    </Box>
+                    {selectedMovie.movieLanguage && (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="body1" sx={{ color: '#00d4ff' }}>🌐</Typography>
+                        <Typography variant="body1">{selectedMovie.movieLanguage}</Typography>
+                      </Box>
+                    )}
+                    {selectedMovie.movieCountry && (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="body1" sx={{ color: '#00d4ff' }}>📍</Typography>
+                        <Typography variant="body1">{selectedMovie.movieCountry}</Typography>
+                      </Box>
+                    )}
+                  </Box>
+
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+                      Genres
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                      {selectedMovie.genre.map((g, i) => (
+                        <Chip key={i} label={g} />
+                      ))}
+                    </Box>
+                  </Box>
+
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+                      Director
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <PersonIcon sx={{ fontSize: 20, color: '#00d4ff' }} />
+                      <Typography variant="body1">{selectedMovie.director}</Typography>
+                    </Box>
+                  </Box>
+
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+                      Cast
+                    </Typography>
+                    <Typography variant="body2">
+                      {selectedMovie.cast.length > 0
+                        ? selectedMovie.cast.join(', ')
+                        : 'Not available'}
+                    </Typography>
+                  </Box>
+
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+                      Description
+                    </Typography>
+                    <Typography variant="body2" sx={{ lineHeight: 1.8 }}>
+                      {selectedMovie.description}
+                    </Typography>
+                  </Box>
+                </Box>
               </DialogContent>
             </motion.div>
           )}
