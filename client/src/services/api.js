@@ -2,7 +2,8 @@ import axios from 'axios';
 
 // Helper to construct the base URL intelligently
 const getBaseUrl = () => {
-  let url = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  // Default to the production backend if env var is missing
+  let url = process.env.REACT_APP_API_URL || 'https://bigdata-movie-backend.vercel.app';
   
   // Remove trailing slash
   url = url.replace(/\/$/, '');
