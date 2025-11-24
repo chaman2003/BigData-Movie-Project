@@ -13,8 +13,17 @@ dotenv.config();
 
 const app = express();
 
-// Establish database connection once per runtime
-connectDB().catch(err => console.error('Initial DB Connection Failed:', err));
+// Initialize database connection
+let dbConnected = false;
+connectDB()
+  .then(() => {
+    dbConnected = true;
+    console.log('✅ Database initialized successfully');
+  })
+  .catch(err => {
+    console.error('❌ Initial DB Connection Failed:', err);
+    dbConnected = false;
+  });
 
 // Middleware
 app.use(cors({
@@ -38,9 +47,6 @@ app.use((req, res, next) => {
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Routes (support both /api/movies and /movies for flexibility)
-app.use(['/api/movies', '/movies'], movieRoutes);
-
 // Root route for uptime checks
 app.get('/', (req, res) => {
   res.json({ status: 'OK', message: 'Movie Analytics API', timestamp: new Date().toISOString() });
@@ -48,8 +54,11 @@ app.get('/', (req, res) => {
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Server is running', timestamp: new Date().toISOString() });
+  res.json({ status: 'OK', message: 'Server is running', dbConnected, timestamp: new Date().toISOString() });
 });
+
+// Routes (support both /api/movies and /movies for flexibility)
+app.use(['/api/movies', '/movies'], movieRoutes);
 
 // Catch favicon and other static requests
 app.get('/favicon.ico', (req, res) => res.status(204).end());
@@ -57,10 +66,11 @@ app.get('/favicon.png', (req, res) => res.status(204).end());
 
 // Error handler
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('❌ Error:', err.stack);
   res.status(500).json({
     success: false,
-    error: err.message || 'Server Error'
+    error: err.message || 'Server Error',
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
   });
 });
 

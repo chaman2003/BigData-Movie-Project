@@ -53,7 +53,8 @@ export const getMovies = async (req, res) => {
       Movie.find(query)
         .sort(sortBy)
         .skip(skip)
-        .limit(numericLimit),
+        .limit(numericLimit)
+        .lean(),
       Movie.countDocuments(query)
     ]);
 
@@ -73,9 +74,11 @@ export const getMovies = async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('❌ Error in getMovies:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 };
@@ -214,7 +217,8 @@ export const getAnalytics = async (req, res) => {
     const topRatedMovies = await Movie.find(filterQuery)
       .sort('-rating')
       .limit(10)
-      .select('title rating year genre posterUrl movieLanguage movieCountry');
+      .select('title rating year genre posterUrl movieLanguage movieCountry')
+      .lean();
     
     res.json({
       success: true,
@@ -234,9 +238,11 @@ export const getAnalytics = async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('❌ Error in getAnalytics:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 };
@@ -249,13 +255,14 @@ export const getRecommendations = async (req, res) => {
     
     let query = { rating: { $gte: parseFloat(minRating) } };
     
-    if (genre) {
+    if (genre && genre !== 'All') {
       query.genre = genre;
     }
     
     const recommendations = await Movie.find(query)
       .sort('-rating')
-      .limit(20);
+      .limit(20)
+      .lean();
     
     res.json({
       success: true,
@@ -263,9 +270,11 @@ export const getRecommendations = async (req, res) => {
       data: recommendations
     });
   } catch (error) {
+    console.error('❌ Error in getRecommendations:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 };
@@ -349,22 +358,26 @@ export const deleteMovie = async (req, res) => {
 // @route   GET /api/movies/filters/options
 export const getFilterOptions = async (req, res) => {
   try {
-    const languages = await Movie.distinct('movieLanguage');
-    const countries = await Movie.distinct('movieCountry');
-    const years = await Movie.distinct('year');
+    const [languages, countries, years] = await Promise.all([
+      Movie.distinct('movieLanguage'),
+      Movie.distinct('movieCountry'),
+      Movie.distinct('year')
+    ]);
     
     res.json({
       success: true,
       data: {
-        languages: languages.sort(),
-        countries: countries.sort(),
-        years: years.sort((a, b) => b - a)
+        languages: languages.filter(Boolean).sort(),
+        countries: countries.filter(Boolean).sort(),
+        years: years.filter(Boolean).sort((a, b) => b - a)
       }
     });
   } catch (error) {
+    console.error('❌ Error in getFilterOptions:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 };
