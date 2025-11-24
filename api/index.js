@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import connectDB from './config/database.js';
 import movieRoutes from './routes/movieRoutes.js';
 
 dotenv.config();
@@ -30,14 +30,28 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Connect to database before handling requests
-let isConnected = false;
+// MongoDB connection
+let cachedDb = null;
 
-export default async (req, res) => {
-  if (!isConnected) {
-    await connectDB();
-    isConnected = true;
+async function connectToDatabase() {
+  if (cachedDb && mongoose.connection.readyState === 1) {
+    return cachedDb;
   }
-  
+
+  try {
+    const conn = await mongoose.connect(process.env.MONGODB_URI, {
+      dbName: 'movieDB'
+    });
+    cachedDb = conn;
+    console.log('✅ MongoDB Connected');
+    return cachedDb;
+  } catch (error) {
+    console.error('❌ MongoDB connection error:', error.message);
+    throw error;
+  }
+}
+
+export default async function handler(req, res) {
+  await connectToDatabase();
   return app(req, res);
-};
+}
