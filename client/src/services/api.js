@@ -1,9 +1,26 @@
 import axios from 'axios';
 
-const rawBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-const API_URL = rawBaseUrl.endsWith('/api')
-  ? rawBaseUrl
-  : `${rawBaseUrl.replace(/\/$/, '')}/api`;
+// Helper to construct the base URL intelligently
+const getBaseUrl = () => {
+  let url = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  
+  // Remove trailing slash
+  url = url.replace(/\/$/, '');
+  
+  // Remove /movies suffix if user accidentally included it
+  url = url.replace(/\/movies$/, '');
+  
+  // Remove /api suffix if present (we'll add it back to be consistent)
+  url = url.replace(/\/api$/, '');
+  
+  return `${url}/api`;
+};
+
+const API_URL = getBaseUrl();
+console.log('🔌 API Configuration:', {
+  raw: process.env.REACT_APP_API_URL,
+  computed: API_URL
+});
 
 const api = axios.create({
   baseURL: API_URL,
@@ -11,6 +28,22 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// Add response interceptor for better error debugging
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('❌ API Call Failed:', {
+      url: error.config?.url,
+      baseURL: error.config?.baseURL,
+      fullUrl: `${error.config?.baseURL}${error.config?.url}`,
+      method: error.config?.method,
+      status: error.response?.status,
+      data: error.response?.data
+    });
+    return Promise.reject(error);
+  }
+);
 
 // Movies API
 export const movieAPI = {

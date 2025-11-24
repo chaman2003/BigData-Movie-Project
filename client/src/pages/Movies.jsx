@@ -104,7 +104,18 @@ const Movies = () => {
       }
     } catch (fetchError) {
       if (fetchError.code === 'ERR_CANCELED') return;
-      setError('Failed to load movies. Please try again.');
+      
+      const status = fetchError.response?.status;
+      const url = fetchError.config?.url;
+      let msg = 'Failed to load movies. Please try again.';
+      
+      if (status === 404) {
+        msg = `API Endpoint not found (404). Checked: ${url}`;
+      } else if (fetchError.message) {
+        msg = fetchError.message;
+      }
+      
+      setError(msg);
       console.error('Error fetching movies:', fetchError);
     } finally {
       setLoading(false);
