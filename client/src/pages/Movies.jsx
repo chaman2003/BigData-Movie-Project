@@ -13,6 +13,12 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Slider,
+  Button,
 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import SearchIcon from '@mui/icons-material/Search';
@@ -30,6 +36,13 @@ const Movies = () => {
   const [movies, setMovies] = useState([]);
   const [selectedGenre, setSelectedGenre] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedLanguage, setSelectedLanguage] = useState('All');
+  const [selectedCountry, setSelectedCountry] = useState('All');
+  const [selectedYear, setSelectedYear] = useState('All');
+  const [minRating, setMinRating] = useState(0);
+  const [filterOptions, setFilterOptions] = useState({ languages: [], countries: [], years: [] });
+  const [filtersLoading, setFiltersLoading] = useState(false);
+  const [filtersError, setFiltersError] = useState(null);
   const debouncedSearch = useDebounce(searchTerm, 300);
   const [loading, setLoading] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
@@ -44,6 +57,24 @@ const Movies = () => {
   const pageRef = useRef(1);
   const isFetchingRef = useRef(false);
   const hasMoreRef = useRef(true);
+
+  useEffect(() => {
+    const loadFilterOptions = async () => {
+      setFiltersLoading(true);
+      setFiltersError(null);
+      try {
+        const response = await movieAPI.getFilterOptions();
+        setFilterOptions(response.data.data || { languages: [], countries: [], years: [] });
+      } catch (optionsError) {
+        console.error('Error fetching filter options:', optionsError);
+        setFiltersError('Failed to load filter options. Filters may be limited.');
+      } finally {
+        setFiltersLoading(false);
+      }
+    };
+
+    loadFilterOptions();
+  }, []);
 
   const fetchMovies = useCallback(async ({ reset = false } = {}) => {
     if (isFetchingRef.current) return;
@@ -80,6 +111,22 @@ const Movies = () => {
     const trimmedSearch = debouncedSearch.trim();
     if (trimmedSearch) {
       params.search = trimmedSearch;
+    }
+
+    if (selectedLanguage !== 'All') {
+      params.movieLanguage = selectedLanguage;
+    }
+
+    if (selectedCountry !== 'All') {
+      params.movieCountry = selectedCountry;
+    }
+
+    if (selectedYear !== 'All') {
+      params.year = Number(selectedYear);
+    }
+
+    if (minRating > 0) {
+      params.minRating = minRating;
     }
 
     try {
@@ -120,7 +167,7 @@ const Movies = () => {
       setIsFetching(false);
       isFetchingRef.current = false;
     }
-  }, [debouncedSearch, selectedGenre]);
+  }, [debouncedSearch, selectedGenre, selectedLanguage, selectedCountry, selectedYear, minRating]);
 
   useEffect(() => {
     setMovies([]);
@@ -156,6 +203,19 @@ const Movies = () => {
       observer.disconnect();
     };
   }, [fetchMovies, hasMore, isFetching, loading]);
+
+  const handleResetFilters = () => {
+    setSelectedGenre('All');
+    setSelectedLanguage('All');
+    setSelectedCountry('All');
+    setSelectedYear('All');
+    setMinRating(0);
+  };
+
+  const handleRatingChange = (_, value) => {
+    const nextValue = Array.isArray(value) ? value[0] : value;
+    setMinRating(nextValue);
+  };
 
   const handleMovieClick = (movie) => {
     setSelectedMovie(movie);
@@ -221,6 +281,131 @@ const Movies = () => {
           }}
           sx={{ mb: 3 }}
         />
+      </motion.div>
+
+      {/* Advanced Filters */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.15 }}
+      >
+        <Card
+          sx={{
+            mb: 4,
+            background: 'rgba(26, 32, 44, 0.6)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '18px',
+            backdropFilter: 'blur(24px)'
+          }}
+        >
+          <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                Refine Results
+              </Typography>
+              <Button
+                variant="text"
+                onClick={handleResetFilters}
+                disabled={
+                  selectedGenre === 'All' &&
+                  selectedLanguage === 'All' &&
+                  selectedCountry === 'All' &&
+                  selectedYear === 'All' &&
+                  minRating === 0
+                }
+                sx={{ color: '#00d4ff' }}
+              >
+                Reset Filters
+              </Button>
+            </Box>
+
+            {filtersError && (
+              <Typography variant="body2" color="#ff6384">
+                {filtersError}
+              </Typography>
+            )}
+
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+                gap: 2,
+              }}
+            >
+              <FormControl fullWidth>
+                <InputLabel>Language</InputLabel>
+                <Select
+                  value={selectedLanguage}
+                  label="Language"
+                  onChange={(e) => setSelectedLanguage(e.target.value)}
+                  disabled={filtersLoading}
+                >
+                  <MenuItem value="All">All languages</MenuItem>
+                  {filterOptions.languages.map((lang) => (
+                    <MenuItem key={lang} value={lang}>
+                      {lang}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth>
+                <InputLabel>Country</InputLabel>
+                <Select
+                  value={selectedCountry}
+                  label="Country"
+                  onChange={(e) => setSelectedCountry(e.target.value)}
+                  disabled={filtersLoading}
+                >
+                  <MenuItem value="All">All countries</MenuItem>
+                  {filterOptions.countries.map((country) => (
+                    <MenuItem key={country} value={country}>
+                      {country}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth>
+                <InputLabel>Release Year</InputLabel>
+                <Select
+                  value={selectedYear}
+                  label="Release Year"
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                  disabled={filtersLoading}
+                >
+                  <MenuItem value="All">All years</MenuItem>
+                  {filterOptions.years.map((yearOption) => (
+                    <MenuItem key={yearOption} value={String(yearOption)}>
+                      {yearOption}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Minimum Rating: {minRating.toFixed(1)}
+                </Typography>
+                <Slider
+                  value={minRating}
+                  onChange={handleRatingChange}
+                  min={0}
+                  max={10}
+                  step={0.5}
+                  marks
+                  valueLabelDisplay="auto"
+                  sx={{
+                    color: '#00d4ff',
+                    '& .MuiSlider-thumb': {
+                      boxShadow: '0 2px 10px rgba(0, 212, 255, 0.4)',
+                    }
+                  }}
+                />
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
       </motion.div>
 
       {/* Genre Filter */}
