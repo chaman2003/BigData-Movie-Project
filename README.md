@@ -256,23 +256,86 @@ npm start
 
 </div>
 
+### 🌐 Live Demo
+
+**Production:** [https://movie-bigdata.vercel.app](https://your-deployment-url.vercel.app)
+
+> Replace with your actual Vercel deployment URL after first deploy
+
 ---
 
 ## ☁️ Vercel Deployment
 
-1. **Connect the repository** in Vercel by using the "Import Git Repository" flow. The root-level `vercel.json` automatically triggers a dual build:
-  - `@vercel/static-build` builds the React client from `client/` and serves `client/build`.
-  - `@vercel/node` exposes the Express API through `api/server.js`, with all `/api/*` routes rewritten to the serverless function.
-2. **Set environment variables** inside the Vercel dashboard (Project Settings → Environment Variables):
-  - `MONGODB_URI` → your MongoDB Atlas connection string (includes credentials and cluster).
-  - Optional: `REACT_APP_API_URL` if you prefer an absolute API URL; otherwise the client defaults to `/api` and automatically targets the same Vercel domain.
-3. **Deploy**. Every push to `main` is now auto-built; Preview deployments mirror production configuration.
+### Quick Deploy to Vercel
 
-> 🧪 Local tip: create `client/.env.local` with `REACT_APP_API_URL=http://localhost:5000/api` when running the CRA dev server so that it talks to the local Express instance.
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/chaman2003/BigData-Movie-Project)
 
----
+### Manual Deployment Steps
 
-## 📁 Project Structure
+1. **Import Repository** in Vercel:
+   - Go to [Vercel Dashboard](https://vercel.com/dashboard)
+   - Click "Add New" → "Project"
+   - Import your GitHub repository `BigData-Movie-Project`
+   - Vercel will automatically detect the configuration from `vercel.json`
+
+2. **Configure Environment Variables**:
+   - In Project Settings → Environment Variables, add:
+     - **`MONGODB_URI`** = `your-mongodb-atlas-connection-string`
+     - Example: `mongodb+srv://username:password@cluster.mongodb.net/?appName=movie-bd`
+   - Apply to: **Production**, **Preview**, and **Development**
+
+3. **Deploy**:
+   - Click "Deploy"
+   - Vercel builds:
+     - ✅ React frontend from `client/` folder
+     - ✅ Express API as serverless functions from `api/` folder
+   - All `/api/*` requests are automatically routed to serverless backend
+   - Frontend served from root domain
+
+4. **Auto-Deployments**:
+   - Every push to `main` triggers automatic production deployment
+   - Pull requests create preview deployments
+
+### Project Structure for Vercel
+
+```
+📦 BigData-Movie-Project/
+├── 📂 api/                    # ⚡ Serverless API
+│   ├── config/               # Database connection
+│   ├── controllers/          # Business logic
+│   ├── models/              # Mongoose schemas
+│   ├── routes/              # Express routes
+│   ├── index.js             # Serverless handler
+│   └── package.json         # API dependencies
+│
+├── 📂 client/                # ⚛️ React Frontend
+│   └── (React app files)
+│
+├── 📂 server/                # 🖥️ Local development
+│   └── (Same as api/ for local dev)
+│
+└── vercel.json              # Vercel configuration
+```
+
+### Local Development
+
+For local development with hot reload:
+
+```bash
+# Terminal 1 - Backend
+cd server
+npm install
+npm run dev          # Runs on http://localhost:5000
+
+# Terminal 2 - Frontend  
+cd client
+npm install
+npm start           # Runs on http://localhost:3000
+```
+
+> 💡 **Tip**: The client proxy in `package.json` automatically forwards `/api` requests to `localhost:5000` during local development.
+
+---## 📁 Project Structure
 
 ```
 📦 movie-dashboard/
@@ -304,7 +367,19 @@ npm start
 │   │   └── index.css                  # Global styles
 │   └── package.json
 │
-├── 📂 server/                          # ⚙️ Node.js Backend
+├── 📂 api/                             # ⚡ Vercel Serverless API
+│   ├── 📂 config/
+│   │   └── database.js                # 🗄️ MongoDB connection
+│   ├── 📂 controllers/
+│   │   └── movieController.js         # 🎮 Business logic
+│   ├── 📂 models/
+│   │   └── Movie.js                   # 📋 Mongoose schema
+│   ├── 📂 routes/
+│   │   └── movieRoutes.js             # 🛣️ API routes
+│   ├── index.js                        # 🚀 Serverless handler
+│   └── package.json                    # API dependencies
+│
+├── 📂 server/                          # ⚙️ Local Development Backend
 │   ├── 📂 config/
 │   │   └── database.js                # 🗄️ MongoDB setup
 │   ├── 📂 controllers/
@@ -316,9 +391,11 @@ npm start
 │   ├── 📂 seeds/
 │   │   └── seedMovies.js              # 🌱 1,000+ movies
 │   ├── .env                            # 🔐 Environment vars
-│   ├── server.js                       # 🚀 Express app
+│   ├── app.js                          # 🔧 Express app setup
+│   ├── server.js                       # 🚀 Local server
 │   └── package.json
 │
+├── vercel.json                         # ☁️ Vercel config
 └── 📄 README.md                        # 📖 You are here!
 ```
 
