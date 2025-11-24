@@ -176,24 +176,6 @@
 
 ---
 
-## 📸 Screenshots
-
-<div align="center">
-
-### Dashboard Analytics
-<img src="https://via.placeholder.com/800x400/0f1419/00d4ff?text=Interactive+Dashboard+with+Real-time+Charts" alt="Dashboard" width="100%"/>
-
-*Real-time analytics with animated charts, stat cards, and top-rated movies table*
-
----
-
-### Movie Browsing
-<img src="https://via.placeholder.com/800x400/0f1419/00d4ff?text=1000%2B+Movies+with+Infinite+Scroll" alt="Movies Page" width="100%"/>
-
-*Infinite scroll movie grid with search, filters, and stunning poster imagery*
-
----
-
 ### Smart Filtering
 <img src="https://via.placeholder.com/800x400/0f1419/00d4ff?text=Advanced+Filter+System" alt="Filters" width="100%"/>
 
