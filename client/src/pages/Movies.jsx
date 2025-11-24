@@ -438,7 +438,8 @@ const Movies = () => {
                   </Card>
                 </motion.div>
               </Grid>
-            ))}
+              );
+            })}
           </AnimatePresence>
         )}
       </Grid>
