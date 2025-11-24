@@ -317,9 +317,12 @@ const Movies = () => {
           ))
         ) : (
           <AnimatePresence>
-            {movies.map((movie, index) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={movie._id}>
-                <motion.div
+            {movies.map((movie, index) => {
+              const posterSources = getPosterWithFallback(movie.posterUrl, movie.title);
+
+              return (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={movie._id}>
+                  <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
@@ -350,13 +353,13 @@ const Movies = () => {
                     <Box sx={{ position: 'relative', paddingTop: '150%', overflow: 'hidden', bgcolor: '#1a202c' }}>
                       <CardMedia
                         component="img"
-                        image={getPosterWithFallback(movie.posterUrl)}
+                        image={posterSources.src}
                         alt={movie.title}
                         className="movie-poster"
                         loading="lazy"
                         onError={(e) => {
                           e.target.onerror = null;
-                          e.target.src = 'https://via.placeholder.com/500x750/1a202c/00d4ff?text=No+Image';
+                          e.target.src = posterSources.placeholder;
                         }}
                         sx={{
                           position: 'absolute',
@@ -501,16 +504,25 @@ const Movies = () => {
               <DialogContent>
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={4}>
-                    <motion.img
-                      src={getPosterWithFallback(selectedMovie.posterUrl)}
-                      alt={selectedMovie.title}
-                      style={{
-                        width: '100%',
-                        borderRadius: '16px',
-                        border: '1px solid rgba(0, 212, 255, 0.3)',
-                      }}
-                      whileHover={{ scale: 1.02 }}
-                    />
+                    {(() => {
+                      const posterSources = getPosterWithFallback(selectedMovie.posterUrl, selectedMovie.title);
+                      return (
+                        <motion.img
+                          src={posterSources.src}
+                          alt={selectedMovie.title}
+                          style={{
+                            width: '100%',
+                            borderRadius: '16px',
+                            border: '1px solid rgba(0, 212, 255, 0.3)',
+                          }}
+                          whileHover={{ scale: 1.02 }}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = posterSources.placeholder;
+                          }}
+                        />
+                      );
+                    })()}
                   </Grid>
                   <Grid item xs={12} md={8}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>

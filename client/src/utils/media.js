@@ -1,8 +1,36 @@
-const PLACEHOLDER_POSTER = 'https://via.placeholder.com/500x750/1a202c/00d4ff?text=Movie+Poster';
+const PLACEHOLDER_BASE = 'https://placehold.co/500x750/111827/38bdf8?font=montserrat&text=';
 
-export const getSafePosterUrl = (rawUrl) => {
+const buildPlaceholderText = (title = 'Movie Poster') => {
+  const cleanTitle = typeof title === 'string' && title.trim().length > 0
+    ? title.trim().replace(/\s+/g, ' ')
+    : 'Movie Poster';
+
+  const words = cleanTitle.split(' ');
+  const lines = [];
+  let currentLine = '';
+
+  words.forEach((word) => {
+    const projected = `${currentLine} ${word}`.trim();
+    if (projected.length > 12 && currentLine) {
+      lines.push(currentLine.trim());
+      currentLine = word;
+    } else {
+      currentLine = projected;
+    }
+  });
+
+  if (currentLine) {
+    lines.push(currentLine.trim());
+  }
+
+  const limitedLines = lines.slice(0, 3);
+  const text = limitedLines.join('\n') || 'Movie Poster';
+  return `${PLACEHOLDER_BASE}${encodeURIComponent(text)}`;
+};
+
+const getSafePosterUrl = (rawUrl) => {
   if (!rawUrl || typeof rawUrl !== 'string') {
-    return PLACEHOLDER_POSTER;
+    return null;
   }
 
   let url = rawUrl.trim();
@@ -12,17 +40,15 @@ export const getSafePosterUrl = (rawUrl) => {
     url = `https:${url}`;
   }
 
-  if (!url.startsWith('http')) {
-    url = `https://${url.replace(/^https?:\/\//, '')}`;
+  if (!/^https?:/i.test(url)) {
+    url = `https://${url.replace(/^https?:\/\//i, '')}`;
   }
 
-  // Add missing extension for TMDB assets generated without .jpg
-  const tmdbPattern = /^https?:\/\/image\.tmdb\.org\/.*\/[A-Za-z0-9]+$/;
+  const tmdbPattern = /^https?:\/\/image\.tmdb\.org\/.*\/[A-Za-z0-9]+$/i;
   if (tmdbPattern.test(url)) {
     url = `${url}.jpg`;
   }
 
-  // If the URL ends with a slash, append jpg
   if (/\/$/.test(url)) {
     url = `${url}poster.jpg`;
   }
@@ -30,4 +56,14 @@ export const getSafePosterUrl = (rawUrl) => {
   return url;
 };
 
-export const getPosterWithFallback = (rawUrl) => getSafePosterUrl(rawUrl) || PLACEHOLDER_POSTER;
+export const getPosterWithFallback = (rawUrl, title) => {
+  const placeholder = buildPlaceholderText(title);
+  const safeUrl = getSafePosterUrl(rawUrl);
+
+  return {
+    src: safeUrl || placeholder,
+    placeholder,
+  };
+};
+
+export const getPosterPlaceholder = buildPlaceholderText;

@@ -160,9 +160,12 @@ const Recommendations = () => {
           </motion.div>
 
           <Grid container spacing={3}>
-            {recommendations.map((movie, index) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={movie._id}>
-                <motion.div
+            {recommendations.map((movie, index) => {
+              const posterSources = getPosterWithFallback(movie.posterUrl, movie.title);
+
+              return (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={movie._id}>
+                  <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3, delay: index * 0.02 }}
@@ -191,9 +194,14 @@ const Recommendations = () => {
                     <Box sx={{ position: 'relative', paddingTop: '150%', overflow: 'hidden' }}>
                       <CardMedia
                         component="img"
-                        image={getPosterWithFallback(movie.posterUrl)}
+                        image={posterSources.src}
                         alt={movie.title}
                         className="movie-poster"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = posterSources.placeholder;
+                        }}
                         sx={{
                           position: 'absolute',
                           top: 0,
@@ -284,7 +292,8 @@ const Recommendations = () => {
                   </Card>
                 </motion.div>
               </Grid>
-            ))}
+              );
+            })}
           </Grid>
 
           {recommendations.length === 0 && (
