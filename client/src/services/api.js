@@ -5,6 +5,11 @@ const getBaseUrl = () => {
   // Default to the production backend if env var is missing
   let url = process.env.REACT_APP_API_URL || 'https://bigdata-movie-backend.vercel.app';
   
+  // Ensure protocol exists (CRITICAL FIX)
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = `https://${url}`;
+  }
+
   // Remove trailing slash
   url = url.replace(/\/$/, '');
   
