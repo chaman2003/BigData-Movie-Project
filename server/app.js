@@ -39,12 +39,12 @@ app.use(['/api/movies', '/movies'], movieRoutes);
 
 // Root route for uptime checks
 app.get('/', (req, res) => {
-  res.json({ status: 'OK', message: 'Movie Analytics API' });
+  res.json({ status: 'OK', message: 'Movie Analytics API', timestamp: new Date().toISOString() });
 });
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Server is running' });
+  res.json({ status: 'OK', message: 'Server is running', timestamp: new Date().toISOString() });
 });
 
 // Catch favicon and other static requests
