@@ -24,8 +24,13 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Routes
-app.use('/api/movies', movieRoutes);
+// Routes (support both /api/movies and /movies for flexibility)
+app.use(['/api/movies', '/movies'], movieRoutes);
+
+// Root route for uptime checks
+app.get('/', (req, res) => {
+  res.json({ status: 'OK', message: 'Movie Analytics API' });
+});
 
 // Health check
 app.get('/api/health', (req, res) => {
