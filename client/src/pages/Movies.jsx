@@ -346,13 +346,17 @@ const Movies = () => {
                       },
                     }}
                   >
-                    <Box sx={{ position: 'relative', paddingTop: '150%', overflow: 'hidden' }}>
+                    <Box sx={{ position: 'relative', paddingTop: '150%', overflow: 'hidden', bgcolor: '#1a202c' }}>
                       <CardMedia
                         component="img"
                         image={movie.posterUrl}
                         alt={movie.title}
                         className="movie-poster"
                         loading="lazy"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = 'https://via.placeholder.com/500x750/1a202c/00d4ff?text=No+Image';
+                        }}
                         sx={{
                           position: 'absolute',
                           top: 0,

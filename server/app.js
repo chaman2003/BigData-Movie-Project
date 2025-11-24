@@ -14,13 +14,14 @@ dotenv.config();
 const app = express();
 
 // Establish database connection once per runtime
-connectDB();
+connectDB().catch(err => console.error('Initial DB Connection Failed:', err));
 
 // Middleware
 app.use(cors({
-  origin: '*', // Allow all origins for now to rule out CORS issues
+  origin: '*', // Allow all origins
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
