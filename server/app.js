@@ -18,11 +18,14 @@ connectDB().catch(err => console.error('Initial DB Connection Failed:', err));
 
 // Middleware
 app.use(cors({
-  origin: '*', // Allow all origins
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-  credentials: true
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
 }));
+
+// Handle preflight requests explicitly
+app.options('*', cors());
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
