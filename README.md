@@ -258,7 +258,7 @@ npm start
 
 ### 🌐 Live Demo
 
-**Production:** [https://movie-bigdata.vercel.app](https://your-deployment-url.vercel.app)
+**Production:** [https://bigdata-movie-project.vercel.app](https://your-deployment-url.vercel.app) 
 
 > Replace with your actual Vercel deployment URL after first deploy
 
