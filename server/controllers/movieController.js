@@ -1,9 +1,21 @@
 import Movie from '../models/Movie.js';
+import connectDB from '../config/database.js';
+
+// Ensure DB connection before each operation
+const ensureDBConnection = async () => {
+  try {
+    await connectDB();
+  } catch (error) {
+    throw new Error(`Database connection failed: ${error.message}`);
+  }
+};
 
 // @desc    Get all movies with optional filters
 // @route   GET /api/movies
 export const getMovies = async (req, res) => {
   try {
+    await ensureDBConnection();
+    
     const {
       genre,
       search,
@@ -87,7 +99,9 @@ export const getMovies = async (req, res) => {
 // @route   GET /api/movies/:id
 export const getMovie = async (req, res) => {
   try {
-    const movie = await Movie.findById(req.params.id);
+    await ensureDBConnection();
+    
+    const movie = await Movie.findById(req.params.id).lean();
     
     if (!movie) {
       return res.status(404).json({
@@ -101,9 +115,11 @@ export const getMovie = async (req, res) => {
       data: movie
     });
   } catch (error) {
+    console.error('❌ Error in getMovie:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 };
@@ -112,6 +128,8 @@ export const getMovie = async (req, res) => {
 // @route   GET /api/movies/analytics/stats
 export const getAnalytics = async (req, res) => {
   try {
+    await ensureDBConnection();
+    
     const { genre, movieLanguage, movieCountry, year, minRating } = req.query;
     
     // Build filter query
@@ -251,6 +269,8 @@ export const getAnalytics = async (req, res) => {
 // @route   GET /api/movies/recommendations
 export const getRecommendations = async (req, res) => {
   try {
+    await ensureDBConnection();
+    
     const { genre, minRating = 7 } = req.query;
     
     let query = { rating: { $gte: parseFloat(minRating) } };
@@ -358,6 +378,8 @@ export const deleteMovie = async (req, res) => {
 // @route   GET /api/movies/filters/options
 export const getFilterOptions = async (req, res) => {
   try {
+    await ensureDBConnection();
+    
     const [languages, countries, years] = await Promise.all([
       Movie.distinct('movieLanguage'),
       Movie.distinct('movieCountry'),

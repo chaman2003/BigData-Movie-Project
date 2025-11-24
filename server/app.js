@@ -15,15 +15,21 @@ const app = express();
 
 // Initialize database connection
 let dbConnected = false;
-connectDB()
-  .then(() => {
+
+// Connect to database on app startup
+const initializeDB = async () => {
+  try {
+    await connectDB();
     dbConnected = true;
     console.log('✅ Database initialized successfully');
-  })
-  .catch(err => {
-    console.error('❌ Initial DB Connection Failed:', err);
+  } catch (err) {
+    console.error('❌ Initial DB Connection Failed:', err.message);
     dbConnected = false;
-  });
+  }
+};
+
+// Call DB initialization
+initializeDB();
 
 // Middleware
 app.use(cors({
@@ -64,10 +70,21 @@ app.use(['/api/movies', '/movies'], movieRoutes);
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 app.get('/favicon.png', (req, res) => res.status(204).end());
 
+// 404 handler
+app.use((req, res) => {
+  console.warn(`⚠️ 404 - Route not found: ${req.method} ${req.url}`);
+  res.status(404).json({
+    success: false,
+    error: 'Route not found',
+    path: req.url,
+    method: req.method
+  });
+});
+
 // Error handler
 app.use((err, req, res, next) => {
   console.error('❌ Error:', err.stack);
-  res.status(500).json({
+  res.status(err.status || 500).json({
     success: false,
     error: err.message || 'Server Error',
     stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
