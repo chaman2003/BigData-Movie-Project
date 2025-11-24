@@ -258,6 +258,20 @@ npm start
 
 ---
 
+## ☁️ Vercel Deployment
+
+1. **Connect the repository** in Vercel by using the "Import Git Repository" flow. The root-level `vercel.json` automatically triggers a dual build:
+  - `@vercel/static-build` builds the React client from `client/` and serves `client/build`.
+  - `@vercel/node` exposes the Express API through `api/server.js`, with all `/api/*` routes rewritten to the serverless function.
+2. **Set environment variables** inside the Vercel dashboard (Project Settings → Environment Variables):
+  - `MONGODB_URI` → your MongoDB Atlas connection string (includes credentials and cluster).
+  - Optional: `REACT_APP_API_URL` if you prefer an absolute API URL; otherwise the client defaults to `/api` and automatically targets the same Vercel domain.
+3. **Deploy**. Every push to `main` is now auto-built; Preview deployments mirror production configuration.
+
+> 🧪 Local tip: create `client/.env.local` with `REACT_APP_API_URL=http://localhost:5000/api` when running the CRA dev server so that it talks to the local Express instance.
+
+---
+
 ## 📁 Project Structure
 
 ```

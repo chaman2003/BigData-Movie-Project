@@ -1,6 +1,10 @@
 import mongoose from 'mongoose';
 
 const connectDB = async () => {
+  if (mongoose.connection.readyState >= 1) {
+    return;
+  }
+
   try {
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
       dbName: 'movieDB'
@@ -8,8 +12,8 @@ const connectDB = async () => {
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
     console.log(`📊 Database: ${conn.connection.name}`);
   } catch (error) {
-    console.error(`❌ Error: ${error.message}`);
-    process.exit(1);
+    console.error(`❌ MongoDB connection error: ${error.message}`);
+    throw error;
   }
 };
 
