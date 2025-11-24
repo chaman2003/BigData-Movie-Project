@@ -86,16 +86,22 @@
 
 #### Movie Browsing
 - 🔍 **Debounced Search** - Optimized search across 1,000+ movies
-- 🎬 **Movie Cards** - Animated cards with real Unsplash posters
+- 📝 **Text-only List Layout** - Clean cards with no images
 - 🌍 **Language & Country Badges** - Visual indicators for movie origin
+- 📅 **Release Year Display** - Timeline visibility
+- ⏱️ **Runtime Information** - Duration in minutes
 - 🎯 **Genre Chips** - Animated filter chips with instant results
 - 📖 **Detail Modal** - Rich movie information overlay
 - ♾️ **Infinite Scroll** - Paginated loading for performance
 
 #### Smart Recommendations
 - 🎭 **Genre-based Filtering** - Find movies by category
-- ⭐ **Rating Threshold** - Filter by minimum rating
-- 🌟 **Curated Lists** - Hand-picked quality cinema
+- 🌍 **Language & Country Filters** - Discover films from specific regions
+- ⭐ **Rating Threshold** - Customize quality threshold (0-10)
+- 📅 **Year Selection** - Browse movies from specific decades
+- 🎯 **Featured Pick** - Top recommendation hero card with full details
+- 🏅 **Ranked Runner-ups** - Numbered suggestions in a distinct list format
+- ✨ **Distinct Layout** - Visually separate from Movies page for clarity
 
 </details>
 
@@ -109,11 +115,13 @@
 - 🔒 **CORS Enabled** - Secure cross-origin resource sharing
 
 #### Advanced Features
-- 🔍 **Text Search Indexes** - Lightning-fast movie queries
+- 🔍 **Full-text Search Indexes** - Lightning-fast movie queries
 - 📊 **Aggregation Pipelines** - Complex analytics computations
-- 🎯 **Smart Filtering** - Multi-parameter query support
+- 🎯 **Multi-parameter Filters** - Language, Country, Year, Genre, Rating
+- 💾 **Database Connection Caching** - Optimized for Vercel serverless
+- ⚡ **Lean Queries** - Reduced memory footprint for read operations
 - 📦 **Batch Operations** - Efficient bulk data processing
-- ⚡ **Pagination** - Optimized data delivery with metadata
+- ⚙️ **Automatic Scaling** - MongoDB Atlas cluster auto-scaling
 
 #### Data Management
 - 🌱 **Seed Script** - Automated database population
@@ -258,9 +266,10 @@ npm start
 
 ### 🌐 Live Demo
 
-**Production:** [https://bigdata-movie-project.vercel.app](https://your-deployment-url.vercel.app) 
+**Frontend:** [https://bigdata-movie-project.vercel.app](https://bigdata-movie-project.vercel.app)  
+**Backend API:** [https://bigdata-movie-backend.vercel.app](https://bigdata-movie-backend.vercel.app)
 
-> Replace with your actual Vercel deployment URL after first deploy
+> Both frontend and backend deployed separately on Vercel for independent scaling
 
 ---
 
@@ -300,22 +309,46 @@ npm start
 
 ```
 📦 BigData-Movie-Project/
-├── 📂 api/                    # ⚡ Serverless API
-│   ├── config/               # Database connection
-│   ├── controllers/          # Business logic
-│   ├── models/              # Mongoose schemas
-│   ├── routes/              # Express routes
-│   ├── index.js             # Serverless handler
-│   └── package.json         # API dependencies
+├── 📂 client/                    # ⚛️ React Frontend (Vercel Static)
+│   ├── 📂 public/
+│   ├── 📂 src/
+│   │   ├── 📂 pages/            # Movies, Recommendations, Dashboard
+│   │   ├── 📂 components/       # Reusable UI components
+│   │   ├── 📂 services/         # API client (axios)
+│   │   └── 📂 hooks/            # Custom hooks (useDebounce)
+│   ├── .env.local                # Local development env
+│   ├── vercel.json              # Static build config
+│   └── package.json
 │
-├── 📂 client/                # ⚛️ React Frontend
-│   └── (React app files)
+├── 📂 server/                    # 🖥️ Local Development Backend
+│   ├── 📂 config/               # Database connection
+│   ├── 📂 controllers/          # Business logic
+│   ├── 📂 models/               # Mongoose schemas
+│   ├── 📂 routes/               # API routes
+│   ├── 📂 seeds/                # Database seeding
+│   ├── .env                      # Environment variables
+│   ├── app.js                   # Express configuration
+│   ├── server.js                # Local dev server
+│   ├── vercel.json              # Serverless config
+│   └── package.json
 │
-├── 📂 server/                # 🖥️ Local development
-│   └── (Same as api/ for local dev)
-│
-└── vercel.json              # Vercel configuration
+└── 📄 README.md                 # Documentation
 ```
+
+### Deployment Architecture
+
+**Frontend (Vercel Static Build):**
+- Runs on Vercel's edge network
+- Built from `client/` folder
+- `@vercel/static-build` builder
+- Auto-redirects all `/api/*` requests to backend
+
+**Backend (Vercel Serverless):**
+- Runs as Node.js serverless functions
+- Built from `server/server.js`
+- `@vercel/node` builder
+- CORS enabled for cross-origin requests
+- MongoDB Atlas cloud database connection
 
 ### Local Development
 
@@ -407,36 +440,52 @@ npm start           # Runs on http://localhost:3000
 
 | Method | Endpoint | Description | Query Params |
 |--------|----------|-------------|--------------|
-| `GET` | `/api/movies` | Get all movies with filters | `search`, `genre`, `page`, `limit` |
+| `GET` | `/api/movies` | Get all movies with filters | `search`, `genre`, `movieLanguage`, `movieCountry`, `year`, `minRating`, `page`, `limit`, `sortBy` |
 | `GET` | `/api/movies/:id` | Get single movie by ID | - |
+| `GET` | `/api/movies/analytics/stats` | Get dashboard statistics | `genre`, `movieLanguage`, `movieCountry`, `year`, `minRating` |
+| `GET` | `/api/movies/recommendations` | Get recommended movies | `genre`, `movieLanguage`, `movieCountry`, `year`, `minRating` |
+| `GET` | `/api/movies/filters/options` | Get all available filter values | - |
 | `POST` | `/api/movies` | Create new movie | Body: movie object |
 | `PUT` | `/api/movies/:id` | Update existing movie | Body: updated fields |
 | `DELETE` | `/api/movies/:id` | Delete movie | - |
 
-### Analytics
+### Example Requests
 
-| Method | Endpoint | Description | Query Params |
-|--------|----------|-------------|--------------|
-| `GET` | `/api/movies/analytics` | Get dashboard statistics | `movieLanguage`, `movieCountry`, `year`, `genre`, `minRating` |
+```bash
+# Get movies with filters
+curl "http://localhost:5000/api/movies?genre=Action&movieLanguage=English&minRating=7&limit=20"
 
-**Returns:**
-```json
-{
-  "totalMovies": 1001,
-  "averageRating": 7.03,
-  "moviesPerYear": [...],
-  "moviesPerGenre": [...],
-  "moviesPerLanguage": [...],
-  "moviesPerCountry": [...],
-  "topRatedMovies": [...]
-}
+# Get recommendations
+curl "http://localhost:5000/api/movies/recommendations?genre=Drama&minRating=8"
+
+# Get available filters
+curl "http://localhost:5000/api/movies/filters/options"
+
+# Get analytics dashboard data
+curl "http://localhost:5000/api/movies/analytics/stats?movieCountry=USA&year=2020"
 ```
 
-### Recommendations
+### Analytics Response
 
-| Method | Endpoint | Description | Query Params |
-|--------|----------|-------------|--------------|
-| `GET` | `/api/movies/recommendations` | Get recommended movies | `genre`, `minRating` |
+```json
+{
+  "success": true,
+  "data": {
+    "totalMovies": 1001,
+    "avgRating": 7.03,
+    "topGenre": { "name": "Drama", "count": 245 },
+    "moviesPerYear": [
+      { "_id": 2000, "count": 8 },
+      { "_id": 2010, "count": 52 }
+    ],
+    "moviesPerGenre": [...],
+    "moviesPerLanguage": [...],
+    "moviesPerCountry": [...],
+    "ratingDistribution": [...],
+    "topRatedMovies": [...]
+  }
+}
+```
 
 ---
 
@@ -536,22 +585,27 @@ transform: translateY(-5px) scale(1.02);
 
 ---
 
-## 🌐 Environment Configuration
+### 🌐 Environment Configuration
 
 Create a `.env` file in the `server/` directory:
 
 ```env
-# MongoDB Atlas Connection
+# MongoDB Atlas Connection String
 MONGODB_URI=mongodb+srv://root:123@movie-bd.pdmegsy.mongodb.net/?appName=movie-bd
 
-# Server Port
+# Server Port (defaults to 5000)
 PORT=5000
 
 # Node Environment
 NODE_ENV=development
 ```
 
-> ⚠️ **Security Note:** For production, use environment-specific credentials and enable MongoDB IP whitelist.
+**Vercel Environment Variables** (set in Vercel Dashboard):
+- Add `MONGODB_URI` to Project Settings → Environment Variables
+- Apply to: Production, Preview, and Development environments
+- Vercel automatically connects to MongoDB from serverless functions
+
+> ⚠️ **Security Note:** Never commit `.env` files. Use Vercel's secure environment variable management for production.
 
 ---
 
